@@ -1,2 +1,2 @@
 # AynaLivePlayerWinBuild
-Use github actions build AynaLivePlayer
+Use github actions build ![AynaLivePlayer](https://github.com/AynaLivePlayer/AynaLivePlayer) On MSYS2-MinGW64

@@ -5,7 +5,7 @@ on: workflow_dispatch
 
 jobs:
   params:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     outputs:
       params: ${{ steps.env-vars.outputs.params }}
     steps:

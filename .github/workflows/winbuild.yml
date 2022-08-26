@@ -62,14 +62,15 @@ jobs:
       - name: Add Dll
         run: cp /mingw64/bin/mpv-1.dll $(pwd)/app/gui/mpv-1.dll
       
-      - name: Add zip
-        run: zip -j app/gui/AynaLivePlayer-${{fromJson(needs.params.outputs.params).sha}}.zip app/gui/AynaLivePlayer.exe app/gui/mpv-1.dll
+
       
       - name: Upload Artifacts
         uses: actions/upload-artifact@v3
         with:
-          path:
-            app/gui/AynaLivePlayer-${{fromJson(needs.params.outputs.params).sha}}.zip
+          name: AynaLivePlayer-${{fromJson(needs.params.outputs.params).sha}}
+          path: |
+            app/gui/AynaLivePlayer.exe
+            app/gui/mpv-1.dll
 
   publish_release:
     name: Publish release
@@ -110,7 +111,7 @@ jobs:
       - name: Create release
         uses: ncipollo/release-action@v1
         with:
-          artifacts: "artifacts/AynaLivePlayer${{fromJson(needs.params.outputs.params).sha}}.zip"
+          artifacts: "artifacts/AynaLivePlayer-${{fromJson(needs.params.outputs.params).sha}}.zip"
           commit: version
           name: "AynaLivePlayer ${{ env.long_time }}"
           body: "**AynaLivePlayer Git commit**: https://github.com/AynaLivePlayer/AynaLivePlayer/commit/${{ fromJson(needs.params.outputs.params).sha }}\n**Build Time**: ${{ env.long_time }}\n**Build Details**: https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}"

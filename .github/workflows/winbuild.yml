@@ -60,7 +60,7 @@ jobs:
         run:  fyne package --src $(pwd)/app/gui --name AynaLivePlayer.exe --appVersion 0.8.4 --icon ../../assets/icon.jpg
       
       - name: Add Dll
-        run: cp /bin/mpv-1.dll $(pwd)/app/gui/mpv-1.dll
+        run: cp /mingw64/bin/mpv-1.dll $(pwd)/app/gui/mpv-1.dll
       
       - name: Add zip
         run: zip -j app/gui/AynaLivePlayer${{fromJson(needs.params.outputs.params).sha}}.zip app/gui/AynaLivePlayer.exe app/gui/mpv-1.dll

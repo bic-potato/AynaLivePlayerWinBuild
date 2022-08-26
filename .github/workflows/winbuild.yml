@@ -63,13 +63,49 @@ jobs:
         run: cp /mingw64/bin/mpv-1.dll $(pwd)/app/gui/mpv-1.dll
       
       - name: Add zip
-        run: zip -j app/gui/AynaLivePlayer${{fromJson(needs.params.outputs.params).sha}}.zip app/gui/AynaLivePlayer.exe app/gui/mpv-1.dll
+        run: zip -j app/gui/AynaLivePlayer-${{fromJson(needs.params.outputs.params).sha}}.zip app/gui/AynaLivePlayer.exe app/gui/mpv-1.dll
       
       - name: Upload Artifacts
         uses: actions/upload-artifact@v3
         with:
           path:
-            app/gui/AynaLivePlayer.zip
+            app/gui/AynaLivePlayer-${{fromJson(needs.params.outputs.params).sha}}.zip
+
+  publish_release:
+    name: Publish release
+    needs: [build,params]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Download artifacts
+        uses: actions/download-artifact@v3
+        with:
+          path: artifacts
+    
+      - name: Get current time
+        run: |
+          echo "long_time=$(date "+%Y-%m-%d %H:%M")" >> $GITHUB_ENV
+          echo "short_time=$(date "+%Y-%m-%d")" >> $GITHUB_ENV
+      - name: Commit version & remove existing tag
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          git fetch --tags
+          git checkout version || git checkout -b version origin/version || ( git checkout --orphan version && git rm -rf . )
+          echo -e "${{ env.short_time }}" > version
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add version
+          git diff-index --quiet HEAD || ( git commit -m "${{ env.short_time }}" && git push origin version )
+          if [ $(git tag -l "${{ env.short_time }}") ] ;then
+            gh release delete "${{ env.short_time }}" || true
+            git push --delete origin "${{ env.short_time }}" || true
+            git tag -d "${{ env.short_time }}" || true
+          fi
+          git checkout main
 
       - name: Create release
         uses: ncipollo/release-action@v1
@@ -82,3 +118,11 @@ jobs:
           allowUpdates: true
           prerelease: false
           token: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: Prune old releases
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          git checkout main
+          bash prunetags.sh

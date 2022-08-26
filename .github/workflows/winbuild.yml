@@ -32,6 +32,9 @@ jobs:
         run: echo "::set-output name=params::$(echo $(jq -n 'env'))"
   build:
     runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
     needs: params
     steps:
       - name: Setup MSYS2
@@ -51,7 +54,7 @@ jobs:
           ref: master
 
       - name: Install Fyne
-        run: go install fyne.io/fyne/v2/cmd/fyne@latest
+        run: GOBIN=/bin/ go install fyne.io/fyne/v2/cmd/fyne@latest
 
       - name: Build
         run:  fyne package --src $(pwd)/app/gui --name AynaLivePlayer.exe --appVersion 0.8.4 --icon ../../assets/icon.jpg
